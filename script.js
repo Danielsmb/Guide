@@ -1,11 +1,10 @@
 // ============================================
-// MODAL IMAGE + COPY FUNCTIONALITY
+// MODAL + COPY FUNCTIONALITY
 // ============================================
 
 let currentImageUrl = '';
 let currentImageTitle = '';
 
-// Buka Modal
 function openImageModal(imageUrl, title) {
     currentImageUrl = imageUrl;
     currentImageTitle = title;
@@ -20,18 +19,15 @@ function openImageModal(imageUrl, title) {
         modalTitle.textContent = title;
         modal.classList.add('active');
         
-        // Setup download button
         if (downloadBtn) {
             downloadBtn.href = imageUrl;
             downloadBtn.download = title.replace(/\s+/g, '_') + '.jpg';
         }
         
-        // Prevent body scroll
         document.body.style.overflow = 'hidden';
     }
 }
 
-// Tutup Modal
 function closeImageModal() {
     const modal = document.getElementById('imageModal');
     if (modal) {
@@ -40,37 +36,33 @@ function closeImageModal() {
     }
 }
 
-// Copy Gambar ke Clipboard
 async function copyImage() {
     if (!currentImageUrl) {
         showToast('Tidak ada gambar untuk di-copy!', 'error');
         return;
     }
     
-    const copyBtn = document.querySelector('.btn-copy');
+    const copyBtn = document.getElementById('copyBtn');
     const originalHTML = copyBtn ? copyBtn.innerHTML : '';
     
     try {
-        // Fetch gambar sebagai blob
         const response = await fetch(currentImageUrl);
-        
-        if (!response.ok) {
-            throw new Error('Gagal memuat gambar');
-        }
+        if (!response.ok) throw new Error('Gagal memuat gambar');
         
         const blob = await response.blob();
         
-        // Cek apakah browser support Clipboard API
         if (navigator.clipboard && window.ClipboardItem) {
-            const clipboardItem = new ClipboardItem({
-                [blob.type]: blob
-            });
+            const clipboardItem = new ClipboardItem({ [blob.type]: blob });
             await navigator.clipboard.write([clipboardItem]);
             
-            // Tampilkan sukses
             if (copyBtn) {
                 copyBtn.classList.add('copied');
-                copyBtn.innerHTML = '<span class="copy-icon">✅</span><span class="copy-text">Berhasil Disalin!</span>';
+                copyBtn.innerHTML = `
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    <span>Berhasil Disalin!</span>
+                `;
                 
                 setTimeout(() => {
                     copyBtn.classList.remove('copied');
@@ -78,29 +70,17 @@ async function copyImage() {
                 }, 2000);
             }
             
-            showToast('✅ Gambar berhasil di-copy ke clipboard!', 'success');
+            showToast('✅ Gambar berhasil di-copy!', 'success');
         } else {
-            // Fallback untuk browser lama - download otomatis
             throw new Error('Clipboard API tidak didukung');
         }
     } catch (error) {
         console.error('Copy error:', error);
-        
-        // Fallback: buka gambar di tab baru untuk manual copy
-        fallbackCopyImage();
+        showToast('⚠️ Buka gambar di tab baru untuk copy manual', 'error');
+        setTimeout(() => window.open(currentImageUrl, '_blank'), 1200);
     }
 }
 
-// Fallback Copy - Buka gambar di tab baru
-function fallbackCopyImage() {
-    showToast('⚠️ Browser tidak mendukung auto-copy. Gambar akan dibuka di tab baru. Klik kanan → Copy Image', 'error');
-    
-    setTimeout(() => {
-        window.open(currentImageUrl, '_blank');
-    }, 1500);
-}
-
-// Toast Notification
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -108,30 +88,15 @@ function showToast(message, type = 'success') {
     toast.textContent = message;
     toast.className = 'toast ' + type + ' show';
     
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
+    setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// Tutup modal saat klik di luar gambar
-document.addEventListener('click', function(e) {
-    const modal = document.getElementById('imageModal');
-    if (e.target === modal) {
-        closeImageModal();
-    }
-});
-
-// Tutup modal dengan tombol ESC
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeImageModal();
-    }
-});
-
 // ============================================
-// SIDEBAR TOGGLE (sudah ada sebelumnya)
+// EVENT LISTENERS
 // ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar Toggle
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
     
@@ -143,26 +108,31 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.appendChild(overlay);
         }
         
-        sidebarToggle.addEventListener('click', function() {
+        sidebarToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
         });
         
-        overlay.addEventListener('click', function() {
+        overlay.addEventListener('click', () => {
             sidebar.classList.remove('active');
             overlay.classList.remove('active');
         });
     }
     
+    // ESC untuk tutup modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeImageModal();
+    });
+    
     // Deteksi IP
     fetch('https://api.ipify.org?format=json')
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            const ipDisplay = document.getElementById('ip-address');
-            if (ipDisplay) ipDisplay.textContent = data.ip;
+            const ip = document.getElementById('ip-address');
+            if (ip) ip.textContent = data.ip;
         })
         .catch(() => {
-            const ipDisplay = document.getElementById('ip-address');
-            if (ipDisplay) ipDisplay.textContent = 'Gagal mendeteksi';
+            const ip = document.getElementById('ip-address');
+            if (ip) ip.textContent = 'Gagal mendeteksi';
         });
 });
