@@ -627,11 +627,6 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.content-footer .separator-dot {
-    margin: 0 12px;
-    color: var(--fg-dim);
-}
-
 /* ============================================
    MODAL
    ============================================ */
