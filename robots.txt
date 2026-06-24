@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://guide-ashy.vercel.app/sitemap.xml

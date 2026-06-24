@@ -117,18 +117,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape') closeImageModal();
     });
 
-    // Deteksi IP
-    fetch('https://api.ipify.org?format=json')
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            var el = document.getElementById('ip-address');
-            if (el) el.textContent = data.ip;
-        })
-        .catch(function() {
-            var el = document.getElementById('ip-address');
-            if (el) el.textContent = 'Gagal mendeteksi';
-        });
-
     // Staggered card reveal pakai IntersectionObserver
     var items = document.querySelectorAll('.gallery-item');
     if ('IntersectionObserver' in window) {
